@@ -4,7 +4,7 @@ import { DRIFT_PROGRAM_ID, MARKET_INDEX_SOL, MARKET_INDEX_USDC, MESSAGE_TRANSMIT
 import type { Quartz } from "./types/idl/quartz.js";
 import type { Program } from "@coral-xyz/anchor";
 import type { PublicKey, } from "@solana/web3.js";
-import { getDriftSpotMarketVaultPublicKey, getDriftStatePublicKey, getPythOracle, getDriftSignerPublicKey, getVaultPublicKey, getVaultSplPublicKey, getCollateralRepayLedgerPublicKey, getBridgeRentPayerPublicKey, getLocalToken, getTokenMinter, getRemoteTokenMessenger, getTokenMessenger, getSenderAuthority, getMessageTransmitter, getEventAuthority, getInitRentPayerPublicKey, getSpendMulePublicKey, getTimeLockRentPayerPublicKey, getWithdrawMulePublicKey, } from "./utils/accounts.js";
+import { getDriftSpotMarketVaultPublicKey, getDriftStatePublicKey, getPythOracle, getDriftSignerPublicKey, getVaultPublicKey, getVaultSplPublicKey, getCollateralRepayLedgerPublicKey, getBridgeRentPayerPublicKey, getLocalToken, getTokenMinter, getRemoteTokenMessenger, getTokenMessenger, getSenderAuthority, getMessageTransmitter, getEventAuthority, getInitRentPayerPublicKey, getSpendMulePublicKey, getTimeLockRentPayerPublicKey, getWithdrawMulePublicKey, getSpendHoldVaultPublicKey, } from "./utils/accounts.js";
 import { calculateWithdrawOrderBalances, getTokenProgram, } from "./utils/helpers.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, } from "@solana/spl-token";
 import { SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY } from "@solana/web3.js";
@@ -663,6 +663,67 @@ export class QuartzUser {
             lookupTables: [this.quartzLookupTable],
             signers: []
         };
+    }
+
+    /**
+     * Creates instructions to iniate and order to adjust the spend limits of a Quartz user account.
+     * @param amountBaseUnits - The amount of tokens to spend.
+     * @param spendCaller - The public key of the Quartz spend caller.
+     * @param spendFee - True means a percentage of the spend will be sent to the spend fee address.
+     * @returns {Promise<{
+    *     ixs: TransactionInstruction[],
+    *     lookupTables: AddressLookupTableAccount[],
+    *     signers: Keypair[]
+    * }>} Object containing:
+    * - ixs: Array of instructions to adjust the spend limits.
+    * - lookupTables: Array of lookup tables for building VersionedTransaction.
+    * - signers: Array of signer keypairs that must sign the transaction the instructions are added to.
+    * @throw Error if the RPC connection fails. Or if the spend limits are invalid.
+    */
+    public async makeInitiateSpendIxs(
+        amountBaseUnits: number,
+        spendCaller: Keypair,
+        spendFee: boolean
+    ): Promise<{
+        ixs: TransactionInstruction[],
+        lookupTables: AddressLookupTableAccount[],
+        signers: Keypair[]
+    }> {
+        const orderAccount = Keypair.generate();
+
+        const ix_initiateSpend = await this.program.methods
+            .initiateSpend(
+                new BN(amountBaseUnits),
+                spendFee
+            )
+            .accounts({
+                vault: this.vaultPubkey,
+                owner: this.pubkey,
+                spendCaller: spendCaller.publicKey,
+                usdcMint: TOKENS[MARKET_INDEX_USDC].mint,
+                driftUser: this.driftUser.pubkey,
+                driftUserStats: this.driftUser.statsPubkey,
+                driftState: getDriftStatePublicKey(),
+                spotMarketVault: getDriftSpotMarketVaultPublicKey(MARKET_INDEX_USDC),
+                driftSigner: this.driftSigner,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                driftProgram: DRIFT_PROGRAM_ID,
+                systemProgram: SystemProgram.programId,
+                timeLockRentPayer: getTimeLockRentPayerPublicKey(),
+                spendHold: orderAccount.publicKey,
+                spendHoldVault: getSpendHoldVaultPublicKey()
+            })
+            .remainingAccounts(
+                this.driftUser.getRemainingAccounts(MARKET_INDEX_USDC)
+            )
+            .instruction();
+
+        return {
+            ixs: [ix_initiateSpend],
+            lookupTables: [this.quartzLookupTable],
+            signers: [spendCaller, orderAccount]
+        }
     }
 
     /**

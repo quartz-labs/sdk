@@ -72,6 +72,15 @@ export const getTimeLockRentPayerPublicKey = () => {
     return timeLockRentPayerPda;
 }
 
+export const getSpendHoldVaultPublicKey = () => {
+    const timeLockRentPayerPda = getTimeLockRentPayerPublicKey();
+    const [spendHoldVaultPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("spend_hold"), timeLockRentPayerPda.toBuffer()],
+        QUARTZ_PROGRAM_ID
+    );
+    return spendHoldVaultPda;
+}
+
 export const getRentFloatPublicKey = () => {
     const [rentFloatPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("rent_float")],
@@ -88,11 +97,11 @@ export const getRentFloatPublicKey = () => {
 export const getDriftUserPublicKey = (vaultPda: PublicKey) => {
     const [userPda] = PublicKey.findProgramAddressSync(
         [
-			Buffer.from("user"),
-			vaultPda.toBuffer(),
-			new BN(0).toArrayLike(Buffer, 'le', 2),
-		],
-		DRIFT_PROGRAM_ID
+            Buffer.from("user"),
+            vaultPda.toBuffer(),
+            new BN(0).toArrayLike(Buffer, 'le', 2),
+        ],
+        DRIFT_PROGRAM_ID
     );
     return userPda;
 }
@@ -110,22 +119,22 @@ export const getDriftStatePublicKey = () => {
         [Buffer.from("drift_state")],
         DRIFT_PROGRAM_ID
     );
-    return statePda; 
+    return statePda;
 }
 
 export const getDriftSignerPublicKey = () => {
     const [signerPda] = PublicKey.findProgramAddressSync(
-		[Buffer.from("drift_signer")],
-		DRIFT_PROGRAM_ID
-	);
+        [Buffer.from("drift_signer")],
+        DRIFT_PROGRAM_ID
+    );
     return signerPda;
 }
 
 export const getDriftSpotMarketVaultPublicKey = (marketIndex: number) => {
     const [spotMarketVaultPda] = PublicKey.findProgramAddressSync(
         [
-            Buffer.from("spot_market_vault"), 
-            new BN(marketIndex).toArrayLike(Buffer, 'le', 2)    
+            Buffer.from("spot_market_vault"),
+            new BN(marketIndex).toArrayLike(Buffer, 'le', 2)
         ],
         DRIFT_PROGRAM_ID
     );
@@ -135,8 +144,8 @@ export const getDriftSpotMarketVaultPublicKey = (marketIndex: number) => {
 export const getDriftSpotMarketPublicKey = (marketIndex: number) => {
     const [spotMarketPda] = PublicKey.findProgramAddressSync(
         [
-            Buffer.from("spot_market"), 
-            new BN(marketIndex).toArrayLike(Buffer, 'le', 2)    
+            Buffer.from("spot_market"),
+            new BN(marketIndex).toArrayLike(Buffer, 'le', 2)
         ],
         DRIFT_PROGRAM_ID
     );

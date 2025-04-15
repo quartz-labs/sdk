@@ -1,21 +1,22 @@
 import { BN, type DriftClient } from "@drift-labs/sdk";
 import { calculateBorrowRate, calculateDepositRate, DRIFT_PROGRAM_ID, fetchUserAccountsUsingKeys as fetchDriftAccountsUsingKeys } from "@drift-labs/sdk";
-import { MESSAGE_TRANSMITTER_PROGRAM_ID, QUARTZ_ADDRESS_TABLE, QUARTZ_PROGRAM_ID } from "./config/constants.js";
+import { MARKET_INDEX_USDC, MESSAGE_TRANSMITTER_PROGRAM_ID, QUARTZ_ADDRESS_TABLE, QUARTZ_PROGRAM_ID, SPEND_FEE_DESTINATION, TOKEN_MESSAGE_MINTER_PROGRAM_ID } from "./config/constants.js";
 import { IDL, type Quartz } from "./types/idl/quartz.js";
 import { AnchorProvider, BorshInstructionCoder, Program, setProvider } from "@coral-xyz/anchor";
 import type { PublicKey, Connection, AddressLookupTableAccount, MessageCompiledInstruction, Logs, Signer, } from "@solana/web3.js";
 import { QuartzUser } from "./user.js";
-import { getBridgeRentPayerPublicKey, getDriftStatePublicKey, getDriftUserPublicKey, getDriftUserStatsPublicKey, getInitRentPayerPublicKey, getMessageTransmitter, getVaultPublicKey } from "./utils/accounts.js";
+import { getBridgeRentPayerPublicKey, getDriftStatePublicKey, getDriftUserPublicKey, getDriftUserStatsPublicKey, getEventAuthority, getInitRentPayerPublicKey, getLocalToken, getMessageTransmitter, getRemoteTokenMessenger, getSenderAuthority, getSpendHoldVaultPublicKey, getTimeLockRentPayerPublicKey, getTokenMessenger, getTokenMinter, getVaultPublicKey } from "./utils/accounts.js";
 import { SystemProgram, SYSVAR_RENT_PUBKEY, } from "@solana/web3.js";
 import { DummyWallet } from "./types/classes/DummyWallet.class.js";
 import type { TransactionInstruction } from "@solana/web3.js";
 import { retryWithBackoff } from "./utils/helpers.js";
-import type { Keypair } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import { DriftClientService } from "./services/driftClientService.js";
 import type { VersionedTransactionResponse } from "@solana/web3.js";
 import type { WithdrawOrder, WithdrawOrderAccount } from "./types/accounts/WithdrawOrder.account.js";
 import type { SpendLimitsOrder, SpendLimitsOrderAccount } from "./types/accounts/SpendLimitsOrder.account.js";
-import type { MarketIndex } from "./index.browser.js";
+import { TOKENS, type MarketIndex } from "./index.browser.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export class QuartzClient {
     private connection: Connection;
@@ -426,6 +427,49 @@ export class QuartzClient {
                 ixs: [ix_reclaimBridgeRent],
                 lookupTables: [this.quartzLookupTable],
                 signers: [rentReclaimer]
+            };
+        },
+
+        makeFulfilSpendIx: async (
+            orderAccount: PublicKey,
+            spendCaller: Keypair
+        ): Promise<{
+            ixs: TransactionInstruction[],
+            lookupTables: AddressLookupTableAccount[],
+            signers: Keypair[]
+        }> => {
+            const messageSentEventData = Keypair.generate();
+
+            const ix_fulfilSpend = await this.program.methods
+                .fulfilSpend()
+                .accounts({
+                    spendCaller: spendCaller.publicKey,
+                    usdcMint: TOKENS[MARKET_INDEX_USDC].mint,
+                    bridgeRentPayer: getBridgeRentPayerPublicKey(),
+                    senderAuthorityPda: getSenderAuthority(),
+                    messageTransmitter: getMessageTransmitter(),
+                    tokenMessenger: getTokenMessenger(),
+                    remoteTokenMessenger: getRemoteTokenMessenger(),
+                    tokenMinter: getTokenMinter(),
+                    localToken: getLocalToken(),
+                    messageSentEventData: messageSentEventData.publicKey,
+                    eventAuthority: getEventAuthority(),
+                    messageTransmitterProgram: MESSAGE_TRANSMITTER_PROGRAM_ID,
+                    tokenMessengerMinterProgram: TOKEN_MESSAGE_MINTER_PROGRAM_ID,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                    systemProgram: SystemProgram.programId,
+                    spendFeeDestination: SPEND_FEE_DESTINATION,
+                    timeLockRentPayer: getTimeLockRentPayerPublicKey(),
+                    spendHold: orderAccount,
+                    spendHoldVault: getSpendHoldVaultPublicKey()
+                })
+                .instruction();
+
+            return {
+                ixs: [ix_fulfilSpend],
+                lookupTables: [this.quartzLookupTable],
+                signers: [spendCaller, messageSentEventData]
             };
         }
     }

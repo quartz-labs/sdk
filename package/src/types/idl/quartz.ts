@@ -726,6 +726,217 @@ export type Quartz = {
       "args": []
     },
     {
+      "name": "initiateSpend",
+      "accounts": [
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spendCaller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "usdcMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftUser",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftUserStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spotMarketVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "timeLockRentPayer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spendHold",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "spendHoldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amountUsdcBaseUnits",
+          "type": "u64"
+        },
+        {
+          "name": "spendFee",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "fulfilSpend",
+      "accounts": [
+        {
+          "name": "spendCaller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "usdcMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bridgeRentPayer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "senderAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "messageTransmitter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMessenger",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "remoteTokenMessenger",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMinter",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "localToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "messageSentEventData",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "messageTransmitterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMessengerMinterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spendFeeDestination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "timeLockRentPayer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spendHold",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spendHoldVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "initiateSpendLimits",
       "accounts": [
         {
@@ -1182,6 +1393,28 @@ export type Quartz = {
           {
             "name": "nextTimeframeResetTimestamp",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "spendHold",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "timeLock",
+            "type": {
+              "defined": "TimeLock"
+            }
+          },
+          {
+            "name": "amountUsdcBaseUnits",
+            "type": "u64"
+          },
+          {
+            "name": "spendFee",
+            "type": "bool"
           }
         ]
       }
@@ -2136,6 +2369,217 @@ export const IDL: Quartz = {
       "args": []
     },
     {
+      "name": "initiateSpend",
+      "accounts": [
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spendCaller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "usdcMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftUser",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftUserStats",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spotMarketVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "driftSigner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "driftProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "timeLockRentPayer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spendHold",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "spendHoldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amountUsdcBaseUnits",
+          "type": "u64"
+        },
+        {
+          "name": "spendFee",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "fulfilSpend",
+      "accounts": [
+        {
+          "name": "spendCaller",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "usdcMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bridgeRentPayer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "senderAuthorityPda",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "messageTransmitter",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMessenger",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "remoteTokenMessenger",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMinter",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "localToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "messageSentEventData",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "messageTransmitterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMessengerMinterProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "spendFeeDestination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "timeLockRentPayer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spendHold",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "spendHoldVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "initiateSpendLimits",
       "accounts": [
         {
@@ -2592,6 +3036,28 @@ export const IDL: Quartz = {
           {
             "name": "nextTimeframeResetTimestamp",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "spendHold",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "timeLock",
+            "type": {
+              "defined": "TimeLock"
+            }
+          },
+          {
+            "name": "amountUsdcBaseUnits",
+            "type": "u64"
+          },
+          {
+            "name": "spendFee",
+            "type": "bool"
           }
         ]
       }
