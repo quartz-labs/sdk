@@ -17,6 +17,7 @@ import type { WithdrawOrder, WithdrawOrderAccount } from "./types/accounts/Withd
 import type { SpendLimitsOrder, SpendLimitsOrderAccount } from "./types/accounts/SpendLimitsOrder.account.js";
 import { TOKENS, type MarketIndex } from "./index.browser.js";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import type { SpendHold, SpendHoldAccount } from "./types/accounts/SpendHold.account.js";
 
 export class QuartzClient {
     private connection: Connection;
@@ -225,6 +226,13 @@ export class QuartzClient {
         );
     }
 
+    public async getOpenSpendHolds(): Promise<SpendHoldAccount[]> {
+        const orders = await this.program.account.spendHold.all();
+        return orders.sort((a, b) =>
+            a.account.timeLock.releaseSlot.cmp(b.account.timeLock.releaseSlot)
+        );
+    }
+
     public async parseOpenWithdrawOrder(
         order: PublicKey,
         retries = 5
@@ -248,6 +256,19 @@ export class QuartzClient {
         const orderAccount = await retryWithBackoff(
             async () => {
                 return await this.program.account.spendLimitsOrder.fetch(order);
+            },
+            retries
+        );
+        return orderAccount;
+    }
+
+    public async parseOpenSpendHold(
+        order: PublicKey,
+        retries = 5
+    ): Promise<SpendHold> {
+        const orderAccount = await retryWithBackoff(
+            async () => {
+                return await this.program.account.spendHold.fetch(order);
             },
             retries
         );
